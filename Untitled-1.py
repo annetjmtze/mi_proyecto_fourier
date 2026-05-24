@@ -150,14 +150,6 @@ if uploaded_file is not None:
     
     # Exportar resultados
     st.subheader("💾 Exportar resultados")
-    output = io.BytesIO()
-    resultados.to_csv(output, index=False)
-    st.download_button(
-        label="📥 Descargar resultados como CSV",
-        data=output.getvalue(),
-        file_name="resultados_fourier.csv",
-        mime="text/csv"
-    )
     col_exp1, col_exp2, col_exp3 = st.columns(3)
 
     with col_exp1:

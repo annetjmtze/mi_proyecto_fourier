@@ -137,14 +137,52 @@ if uploaded_file is not None:
     
     # Exportar resultados
     st.subheader("💾 Exportar resultados")
-    output = io.BytesIO()
-    resultados.to_csv(output, index=False)
-    st.download_button(
-        label="📥 Descargar resultados como CSV",
-        data=output.getvalue(),
-        file_name="resultados_fourier.csv",
-        mime="text/csv"
-    )
+    col_exp1, col_exp2, col_exp3 = st.columns(3)
+
+    with col_exp1:
+        csv_output = io.BytesIO()
+        resultados.to_csv(csv_output, index=False)
+        st.download_button(
+            label="📥 Descargar CSV completo",
+            data=csv_output.getvalue(),
+            file_name="resultados_fourier.csv",
+            mime="text/csv"
+        )
+
+    def get_table_export(df_to_export, format_type='png'):
+        # Formatear los valores para la exportación visual
+        df_temp = df_to_export.copy()
+        for col in ["Magnitud", "a_n", "b_n"]:
+            if col in df_temp.columns: df_temp[col] = df_temp[col].map("{:.4f}".format)
+        for col in ["Ángulo (°)", "Fase (°)"]:
+            if col in df_temp.columns: df_temp[col] = df_temp[col].map("{:.2f}".format)
+        
+        fig, ax = plt.subplots(figsize=(10, len(df_temp) * 0.4 + 1))
+        ax.axis('tight')
+        ax.axis('off')
+        table = ax.table(cellText=df_temp.values, colLabels=df_temp.columns, loc='center', cellLoc='center')
+        table.auto_set_font_size(False)
+        table.set_fontsize(10)
+        buf = io.BytesIO()
+        plt.savefig(buf, format=format_type, bbox_inches='tight', dpi=150)
+        plt.close(fig)
+        return buf.getvalue()
+
+    with col_exp2:
+        st.download_button(
+            label="🖼️ Descargar Tabla Top (PNG)",
+            data=get_table_export(top, 'png'),
+            file_name="tabla_fourier_top.png",
+            mime="image/png"
+        )
+
+    with col_exp3:
+        st.download_button(
+            label="📄 Descargar Tabla Top (PDF)",
+            data=get_table_export(top, 'pdf'),
+            file_name="tabla_fourier_top.pdf",
+            mime="application/pdf"
+        )
     
 else:
     st.info("👈 Por favor, carga tu archivo CSV con la columna 'Muestras'")
