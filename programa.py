@@ -87,11 +87,19 @@ if uploaded_file is not None:
     # Top armónicos
     st.subheader("🎵 Principales armónicos (mayor magnitud)")
     top_n = st.slider("Mostrar top N", min_value=5, max_value=20, value=10)
-    top = resultados.nlargest(top_n, "Magnitud")[["Frecuencia (Hz)", "Magnitud", "Ángulo (°)", "Fase (°)"]]
+    
+    # Preparar tabla con formato específico: Onda (enumerada), Frecuencia, Punto máximo, Magnitud y Fase
+    top_data = resultados.nlargest(top_n, "Magnitud").copy()
+    top = pd.DataFrame({
+        "Onda": range(1, len(top_data) + 1),
+        "Frecuencia": top_data["Frecuencia (Hz)"],
+        "Punto máximo": top_data["Magnitud"],
+        "Magnitud": top_data["Magnitud"],
+        "Fase": top_data["Fase (°)"]
+    })
+
     st.dataframe(top.style.format({
-        "Magnitud": "{:.4f}",
-        "Ángulo (°)": "{:.2f}",
-        "Fase (°)": "{:.2f}"
+        "Frecuencia": "{:.2f}", "Punto máximo": "{:.4f}", "Magnitud": "{:.4f}", "Fase": "{:.2f}"
     }), use_container_width=True)
     
     # Gráfica de magnitud vs frecuencia
@@ -152,9 +160,9 @@ if uploaded_file is not None:
     def get_table_export(df_to_export, format_type='png'):
         # Formatear los valores para la exportación visual
         df_temp = df_to_export.copy()
-        for col in ["Magnitud", "a_n", "b_n"]:
+        for col in ["Magnitud", "Punto máximo", "a_n", "b_n"]:
             if col in df_temp.columns: df_temp[col] = df_temp[col].map("{:.4f}".format)
-        for col in ["Ángulo (°)", "Fase (°)"]:
+        for col in ["Ángulo (°)", "Fase", "Frecuencia"]:
             if col in df_temp.columns: df_temp[col] = df_temp[col].map("{:.2f}".format)
         
         fig, ax = plt.subplots(figsize=(10, len(df_temp) * 0.4 + 1))
