@@ -89,14 +89,22 @@ if uploaded_file is not None:
     
     # Mostrar tabla
     st.subheader("📊 Resultados de Fourier")
-    st.dataframe(resultados.style.format({
+    
+    # Filtro de significancia: permite ocultar armónicos irrelevantes
+    umbral_perc = st.slider("Filtrar armónicos significativos (% de la magnitud máxima)", 0.0, 100.0, 1.0)
+    mag_max = resultados["Magnitud"].max()
+    # Filtrar el DataFrame original para la visualización
+    resultados_sig = resultados[resultados["Magnitud"] >= (umbral_perc / 100) * mag_max]
+    
+    st.info(f"Mostrando {len(resultados_sig)} armónicos que superan el {umbral_perc}% de la magnitud máxima ({mag_max:.4f}).")
+
+    st.dataframe(resultados_sig.style.format({
         "Magnitud": "{:.4f}",
         "Ángulo (°)": "{:.2f}",
         "Fase (°)": "{:.2f}",
         "a_n": "{:.4f}",
         "b_n": "{:.4f}"
     }), height=400, use_container_width=True)
-    
     # Top armónicos
     st.subheader("🎵 Principales armónicos (mayor magnitud)")
     top_n = st.slider("Mostrar top N", min_value=5, max_value=20, value=10)
